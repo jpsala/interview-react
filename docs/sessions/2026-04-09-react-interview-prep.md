@@ -173,3 +173,81 @@ Retomar desde este ejercicio:
 - Se retoma desde `stale closure`, con foco en el ejemplo clasico de `useEffect` + `setInterval`.
 - Consigna activa: responder en 3 a 4 oraciones por que la UI puede mostrar valores nuevos mientras el `console.log` del intervalo sigue mostrando `0`.
 - Criterio de evaluacion inmediato: separar con precision `renders nuevos que actualizan la UI` de `callback registrado una vez que sigue ejecutando una closure vieja`.
+
+## Avance 2026-04-09 - stale closure con intervalo
+
+- El usuario ya responde la idea central correctamente: el `setInterval` sigue usando el `count` capturado en el snapshot del primer render.
+- Tambien conecta bien que la UI si cambia porque `setCount` dispara un nuevo render y React muestra el `count` del render mas reciente.
+- Ajuste pequeno de lenguaje para entrevista: mejor decir `el callback del intervalo quedo enlazado al count del render inicial` que `el setInterval tiene el valor`.
+- Proximo paso recomendado: pulir una version de 3 a 4 oraciones que nombre explicitamente `closure vieja`, `render nuevo` y `callback registrado una sola vez por el efecto con []`.
+
+## Avance 2026-04-09 - soluciones y duda con `useRef`
+
+- El usuario detecta correctamente que la solucion con `[count]` no esta rota: funciona porque el efecto se vuelve a ejecutar y re-registra el intervalo con el `count` mas reciente.
+- Buena intuicion inicial del tradeoff: esa solucion recrea el `setInterval` en cada cambio de `count`.
+- Duda actual importante: como funciona `useRef(count)` y por que el segundo bloque separa `actualizar ref` de `registrar intervalo una sola vez`.
+- Proximo paso recomendado: consolidar el modelo mental de `ref` como caja mutable persistente entre renders que no dispara rerender al cambiar `current`.
+
+## Avance 2026-04-09 - criterio entre dependencias y `useRef`
+
+- El usuario ya trae el tradeoff principal: con `[count]` la solucion es mas explicita y reactiva, pero recrea la suscripcion o callback en cada cambio.
+- Tambien ya capta la ventaja de `useRef`: mantener la funcion o listener estable mientras lee el valor mas reciente.
+- Ajuste de vocabulario recomendado: hablar de `callback estable`, `listener estable` o `suscripcion estable`, segun el caso.
+- Proximo paso recomendado: practicar una respuesta corta que priorice semantica antes que performance: primero `prefiero dependencias cuando el efecto debe reaccionar al valor`; `useRef` cuando necesito registrar algo una sola vez pero leer datos frescos.
+
+## Avance 2026-04-09 - update funcional en intervalo
+
+- El usuario ya explica correctamente que `setCount(count + 1)` dentro de un intervalo registrado con `[]` puede quedar trabado en `1` si el `count` inicial es `0`.
+- Entiende la razon central: el callback viejo sigue calculando desde el `count` capturado en el render inicial y por eso vuelve a intentar poner `1`.
+- Trae bien la solucion esperada sin ayuda: usar update funcional para que React calcule desde el estado previo mas reciente al aplicar la actualizacion.
+- Ajuste de precision recomendado: no decir que la funcion recibe `count`; mejor hablar de `prev` o `estado previo` para no mezclarlo con la variable cerrada del render.
+- Siguiente paso recomendado: cerrar el tema `stale closure` con una respuesta comparando cuando aplica `dependencias`, `useRef` y `update funcional`.
+
+## Cierre de la ronda - stale closure
+
+### Lo que ya quedo firme
+
+- El usuario entiende que `stale closure` no es `closure` en general, sino leer una closure vieja en un contexto que necesita datos frescos.
+- Ya puede explicar correctamente por que la UI puede mostrar valores nuevos mientras un `setInterval` sigue leyendo `0`: React hace renders nuevos para la UI, pero el callback viejo sigue ejecutandose fuera de React con la closure del render inicial.
+- Ya reconoce que la solucion con dependencias correctas no esta rota: funciona porque el efecto se recrea y el nuevo callback captura el valor mas reciente.
+- Ya entiende la idea base de `useRef`: caja mutable persistente entre renders; cambiar `ref.current` no dispara rerender.
+- Ya entiende para que sirve `useRef` en este tema: mantener un callback/listener estable y aun asi leer el valor mas reciente.
+- Ya entiende la solucion con update funcional: `setCount(prev => prev + 1)` evita depender del valor capturado por una closure vieja para calcular el siguiente estado.
+
+### Ajustes de lenguaje recomendados para entrevista
+
+- Preferir `el callback quedo enlazado al count del render inicial` sobre `setInterval tiene el valor`.
+- Preferir `estado previo` o `prev` sobre `count` al describir el parametro del update funcional.
+- Preferir `dependencia reactiva`, `callback estable`, `listener estable` y `closure vieja` como vocabulario corto y preciso.
+
+### Mapa mental consolidado
+
+- `dependencias correctas en useEffect`: cuando el efecto realmente debe reaccionar al cambio de un valor y re-ejecutarse.
+- `useRef`: cuando quiero registrar algo una sola vez o mantener un callback estable, pero leer datos frescos.
+- `update funcional`: cuando el proximo estado depende del estado anterior.
+
+### Corazones del concepto
+
+- `stale closure`: el callback viejo sigue leyendo el estado del render en que fue creado.
+- `useRef`: caja mutable que sobrevive entre renders sin disparar rerender.
+- `update funcional`: React calcula el siguiente estado a partir del estado previo mas reciente, no de la closure vieja.
+
+## Handoff para proxima sesion
+
+### Estado actual del usuario
+
+- El usuario ya tiene la intuicion correcta sobre `stale closure` y sus soluciones tipicas.
+- El principal objetivo pendiente no es conceptual sino de formulacion: responder corto, ordenado y con vocabulario tecnico mas preciso.
+- Hubo senales de fatiga al final de la ronda; conviene retomar con baja friccion, primero consolidando y despues avanzando.
+
+### Donde retomar
+
+- Retomar con una mini sintesis oral de 3 frases, sin exigir perfeccion:
+  - `dependencias correctas cuando el efecto debe reaccionar al valor`
+  - `useRef cuando necesito callback estable con lectura fresca`
+  - `update funcional cuando el nuevo estado depende del anterior`
+- Si esa sintesis sale razonablemente bien, dar por suficientemente cerrado `stale closure` y pasar al proximo tema prioritario: `batching y actualizaciones funcionales` o `useEffect y dependencias`.
+
+### Prompt sugerido para reentrada
+
+- `Retomemos desde la sesion guardada. Haceme cerrar stale closure con una sintesis corta de dependencias, useRef y update funcional; si esta suficientemente bien, pasamos al siguiente tema.`
